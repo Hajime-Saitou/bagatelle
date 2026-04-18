@@ -13,6 +13,18 @@ class TextChunk(list[str]):
         self.cursor = SubscriptCursor(len(lines))
         self.updateCursorSize()
 
+    def extend(self, lines:list[str]):
+        super().extend(lines)
+        self.updateCursorSize()
+
+    def append(self, line:str):
+        super().append(line)
+        self.updateCursorSize()
+
+    def __add__(self, value):
+        self.append(value)
+        return self
+
     def loadFromFile(self, filename:str, encoding:str="utf-8"):
         self.clear()
         self.appendFromFile(filename, encoding)
