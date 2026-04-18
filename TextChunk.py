@@ -70,14 +70,14 @@ class TextChunk(list[str]):
     def matches(self, line:str, keywords:list):
         return any(re.match(keyword, line) for keyword in keywords)
 
-    def pickFrom(self, startKeywords:list, searchFromNextLine:bool=True):
+    def pickFrom(self, startKeywords:list, searchFromNextLine:bool=False):
         startPosition = self.searchForward(startKeywords)
         startPosition = startPosition + 1 if searchFromNextLine and startPosition != -1 else startPosition
         picked = TextChunk(self[startPosition:] if startPosition != -1 else [])
         self.cursor.position += len(picked)
         return picked
 
-    def pickTo(self, endKeywords:list, pickToSearchedLine:bool=True):
+    def pickTo(self, endKeywords:list, pickToSearchedLine:bool=False):
         endPosition = self.searchForward(endKeywords)
         endPosition = endPosition + 1 if pickToSearchedLine and endPosition != -1 else endPosition
         endPosition = endPosition if endPosition != -1 else len(self)
