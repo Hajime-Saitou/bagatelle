@@ -43,33 +43,51 @@ class TextChunk(list[str]):
         with open(filename, "w", encoding=encoding) as f:
             f.write("\n".join(self))
 
-    def forwardSearch(self, keywords:list) -> int:
-        for index, line in enumerate(self):
+    def searchForward(self, keywords:list) -> int:
+        cursor = self.cursor.clone()
+        while cursor.hasNext():
+            line = self[cursor.current()]
             if self.matches(line, keywords):
-                return index
-        else:
-            return -1
+                return cursor.current()
+            cursor.next()
 
-    def backwardSearch(self, keywords:list) -> int:
-        for index, line in enumerate(reversed(self)):
+        return -1
+
+    def searchBackward(self, keywords:list) -> int:
+        cursor = self.cursor.clone()
+        while cursor.hasPrevious():
+            line = self[cursor.current()]
             if self.matches(line, keywords):
-                return len(self) - 1 - index
-        else:
-            return -1
+                return cursor.current()
+            cursor.previous()
+
+        return -1
 
     def matches(self, line:str, keywords:list):
         return any(re.match(keyword, line) for keyword in keywords)
 
     def pickFrom(self, startKeywords:list):
-        startIndex = self.forwardSearch(startKeywords)
-        return TextChunk(self[startIndex:] if startIndex != -1 else [])
+        startPosition = self.searchForward(startKeywords)
+        picked = TextChunk(self[startPosition:] if startPosition != -1 else [])
+        self.cursor += len(picked)
+        return picked
 
     def pickTo(self, endKeywords:list):
-        endIndex:int = self.forwardSearch(endKeywords)
-        return TextChunk(self[:endIndex if endIndex != -1 else len(self)])
-    
+        endPosition = self.searchForward(endKeywords)
+        picked = TextChunk(self[self.cursor.current():endPosition if endPosition != -1 else len(self)])
+        self.cursor += len(picked)
+        return picked
+
     def pick(self, startKeywords:list, endKeywords:list):
         return TextChunk(self.pickFrom(startKeywords).pickTo(endKeywords))
+
+    def pickRange(self, startPosition:int=None, endPosition:int=None):
+        startPosition = startPosition if startPosition is not None else self.cursor.current()
+        endPosition = endPosition if endPosition is not None else len(self)
+        return TextChunk(self[startPosition:endPosition])
+
+    def pickByCount(self, count:int):
+        return self.pickRange(endPosition=self.cursor.current() + count ) if count > 0 else TextChunk([])
 
     def filter(self, keywords:list):
         return TextChunk([line for line in self if self.matches(line, keywords)])
@@ -77,9 +95,11 @@ class TextChunk(list[str]):
     def toList(self) -> list:
         return self
 
-    # with Cursor
     def updateCursorSize(self):
         self.cursor.size = len(self)
+
+    def fetchCurrent(self) -> str:
+        return self[self.cursor.current()]
 
     def fetchNext(self) -> str:
         if not self.cursor.hasNext():
@@ -96,11 +116,3 @@ class TextChunk(list[str]):
         text = self.fetchCurrent()
         self.cursor.previous()
         return text
-
-    def fetchCurrent(self) -> str:
-        return self[self.cursor.current()]
-    
-    def pickRange(self, startPosition:int=None, endPosition:int=None):
-        startPosition = startPosition if startPosition is not None else self.cursor.current()
-        endPosition = endPosition if endPosition is not None else len(self)
-        return TextChunk(self[startPosition:endPosition])
