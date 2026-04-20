@@ -96,7 +96,7 @@ class TextChunk(list[str]):
         endPosition = endPosition if endPosition is not None else len(self)
         return TextChunk(self[startPosition:endPosition])
 
-    def pickByCount(self, count:int):
+    def pickCount(self, count:int):
         return self.pickRange(endPosition=self.cursor.current() + count ) if count > 0 else TextChunk([])
 
     def filter(self, keywords:list):
