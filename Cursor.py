@@ -14,7 +14,7 @@ class RangeCursor:
         self.maxPosition = maxPosition
 
         if self.isOutOfBounds():
-            raise ValueError(f"currentPosition {currentPosition} is out of bounds (minPosition: {minPosition}, maxPosition: {maxPosition})")
+            raise ValueError(f"position {position} is out of bounds (minPosition: {minPosition}, maxPosition: {maxPosition})")
 
     def __iadd__(self, value):
         self.position += value
@@ -44,8 +44,11 @@ class RangeCursor:
     def isOutOfBounds(self) -> bool:
         return self.position < self.minPosition or self.position > self.maxPosition
 
-    def reset(self):
+    def top(self):
         self.position = self.minPosition
+
+    def bottom(self):
+        self.position = self.maxPosition
 
     def clone(self):
         return RangeCursor(self.minPosition, self.maxPosition, self.position)
