@@ -47,8 +47,11 @@ class TextChunk(list[str]):
         with open(filename, "w", encoding=encoding) as f:
             f.write("\n".join(self))
 
-    def searchForward(self, keywords:list) -> int:
+    def searchForward(self, keywords:list, skipHeaderSearch:bool=False) -> int:
         cursor = self.cursor.clone()
+        if skipHeaderSearch:
+            cursor.next()
+
         while cursor.hasNext():
             line = self[cursor.current()]
             if self.matches(line, keywords):
@@ -57,8 +60,11 @@ class TextChunk(list[str]):
 
         return -1
 
-    def searchBackward(self, keywords:list) -> int:
+    def searchBackward(self, keywords:list, skipHeaderSearch:bool=False) -> int:
         cursor = self.cursor.clone()
+        if skipHeaderSearch:
+            cursor.previous()
+
         while cursor.hasPrevious():
             line = self[cursor.current()]
             if self.matches(line, keywords):
@@ -70,15 +76,15 @@ class TextChunk(list[str]):
     def matches(self, line:str, keywords:list):
         return any(re.match(keyword, line) for keyword in keywords)
 
-    def pickFrom(self, startKeywords:list, searchFromNextLine:bool=False):
-        startPosition = self.searchForward(startKeywords)
-        startPosition = startPosition + 1 if searchFromNextLine and startPosition != -1 else startPosition
+    def pickFrom(self, startKeywords:list, skipHeaderSearch:bool=False):
+        startPosition = self.searchForward(startKeywords, skipHeaderSearch)
+        startPosition = startPosition + 1 if skipHeaderSearch and startPosition != -1 else startPosition
         picked = TextChunk(self[startPosition:] if startPosition != -1 else [])
         self.cursor.position += len(picked)
         return picked
 
-    def pickTo(self, endKeywords:list, pickToSearchedLine:bool=False):
-        endPosition = self.searchForward(endKeywords)
+    def pickTo(self, endKeywords:list, pickToSearchedLine:bool=False, skipHeaderSearch:bool=False):
+        endPosition = self.searchForward(endKeywords, skipHeaderSearch)
         endPosition = endPosition + 1 if pickToSearchedLine and endPosition != -1 else endPosition
         endPosition = endPosition if endPosition != -1 else len(self)
         picked = TextChunk(self[self.cursor.current():endPosition])
