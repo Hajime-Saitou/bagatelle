@@ -5,7 +5,7 @@
 # MIT License
 import re
 import os
-from Cursor import SubscriptCursor
+from textdancer.Cursor import SubscriptCursor
 
 class TextChunk(list[str]):
     def __init__(self, lines:list[str]=[]):
