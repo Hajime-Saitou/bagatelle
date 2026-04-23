@@ -39,10 +39,10 @@ class RangeCursor:
         return self.position <= self.maxPosition
 
     def hasPrevious(self) -> bool:
-        return self.position > self.minPosition
+        return self.position >= self.minPosition
 
     def isOutOfBounds(self) -> bool:
-        return self.position < self.minPosition or self.position > self.maxPosition
+        return not self.hasNext() and not self.hasPrevious() 
 
     def top(self):
         self.position = self.minPosition

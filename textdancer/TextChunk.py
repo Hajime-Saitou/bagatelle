@@ -106,15 +106,16 @@ class TextChunk(list[str]):
         return picked
     
     def pickbackFrom(self, startKeywords:list, pickToSearchLine:bool=False, skipCurrentLineSearch:bool=False):
+        currentPosition = self.cursor.current()
         startPosition = self.searchBackward(startKeywords, skipCurrentLineSearch)
         if startPosition == -1:
             self.cursor.top()
-            return TextChunk(self[:self.cursor.current() + 1])
+            return TextChunk(self)
         
-        if not pickToSearchLine and startPosition < len(self) - 1:
+        if not pickToSearchLine:
             startPosition += 1
 
-        picked = TextChunk(self[startPosition:self.cursor.current() + 1])
+        picked = TextChunk(self[startPosition:currentPosition + 1])
         self.cursor.position -= len(picked)
         return picked
     
@@ -123,8 +124,9 @@ class TextChunk(list[str]):
 
         startPosition = self.searchBackward(endKeywords, skipCurrentLineSearch)
         if startPosition == -1:
-            self.cursor.top()
-            return TextChunk(self.toList()[:currentPosition + 1])
+            picked = TextChunk(self[:currentPosition + 1])
+            self.cursor.position -= len(picked)
+            return TextChunk(picked)
 
         if not pickToSearchLine:
             startPosition += 1
